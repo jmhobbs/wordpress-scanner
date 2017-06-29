@@ -12,6 +12,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
+	"github.com/jmhobbs/wordpress-scanner/shared"
 )
 
 var db *bolt.DB
@@ -86,8 +87,8 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 	w.Write(s)
 }
 
-func scanPlugin(plugin, version string) (*Scan, error) {
-	scan := NewScan(plugin, version)
+func scanPlugin(plugin, version string) (*shared.Scan, error) {
+	scan := shared.NewScan(plugin, version)
 
 	log.Println("Downloading Plugin Zip to TempFile")
 	tmp, b, err := downloadPluginFile(plugin, version)
@@ -114,18 +115,18 @@ func scanPlugin(plugin, version string) (*Scan, error) {
 
 		r, err := f.Open()
 		if err != nil {
-			scan.addErrored(f.Name, err)
+			scan.AddErrored(f.Name, err)
 			continue
 		}
 
-		hash, err := GetHash(r)
+		hash, err := shared.GetHash(r)
 		if err != nil {
-			scan.addErrored(f.Name, err)
+			scan.AddErrored(f.Name, err)
 			continue
 		}
 		r.Close()
 
-		scan.addHashed(f.Name, hash)
+		scan.AddHashed(f.Name, hash)
 	}
 
 	return scan, nil

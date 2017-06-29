@@ -6,10 +6,10 @@ all: client server
 FORCE:
 
 client: FORCE
-	$(BUILD_ENV_FLAGS) go build -o bin/client ./client/*.go
+	$(BUILD_ENV_FLAGS) go build -o bin/client ./cmd/client/*.go
 
 server: FORCE
-	$(BUILD_ENV_FLAGS) go build -o bin/server ./server/*.go
+	$(BUILD_ENV_FLAGS) go build -o bin/server ./cmd/server/*.go
 
 help:
 	@echo "Influential make variables"

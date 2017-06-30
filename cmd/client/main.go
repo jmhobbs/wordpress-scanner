@@ -21,7 +21,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	/*
+		bytes, err := scan.MarshalToBinary()
+		if err != nil {
+			log.Fatal(err)
+		}
 
+		err = ioutil.WriteFile("example.bin", bytes, 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+	*/
 	json.NewEncoder(os.Stdout).Encode(scan)
 }
 

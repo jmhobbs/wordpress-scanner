@@ -2,30 +2,19 @@ package meta
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"regexp"
 	"strings"
 )
 
 type PluginMeta struct {
-	Name        string
-	Version     string
-	URI         string
-	Description string
-	Author      string
-	AuthorURI   string
+	Fields map[string]string
 }
 
 var (
-	comment_open   *regexp.Regexp
-	comment_close  *regexp.Regexp
-	plugin_name_re *regexp.Regexp
-	plugin_uri_re  *regexp.Regexp
-	description_re *regexp.Regexp
-	author_re      *regexp.Regexp
-	version_re     *regexp.Regexp
-	author_uri_re  *regexp.Regexp
+	comment_open  *regexp.Regexp
+	comment_close *regexp.Regexp
+	meta_re       *regexp.Regexp
 )
 
 func init() {
@@ -39,34 +28,26 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	plugin_name_re, err = regexp.Compile("\\* +Plugin Name: *(.*)")
-	if err != nil {
-		panic(err)
-	}
-	version_re, err = regexp.Compile("\\* +Version: *(.*)")
-	if err != nil {
-		panic(err)
-	}
-	plugin_uri_re, err = regexp.Compile("\\* +Plugin URI: *(.*)")
-	if err != nil {
-		panic(err)
-	}
-	description_re, err = regexp.Compile("\\* +Description: *(.*)")
-	if err != nil {
-		panic(err)
-	}
-	author_re, err = regexp.Compile("\\* +Author: *(.*)")
-	if err != nil {
-		panic(err)
-	}
-	author_uri_re, err = regexp.Compile("\\* +Author URI: *(.*)")
+	meta_re, err = regexp.Compile("\\*\\s*(.*?)\\s*:\\s*(.*?)\\s*$")
 	if err != nil {
 		panic(err)
 	}
 }
 
 func New() *PluginMeta {
-	return &PluginMeta{}
+	return &PluginMeta{map[string]string{}}
+}
+
+func normalizeKey(key string) string {
+	return strings.Title(strings.ToLower(key))
+}
+
+func (pm *PluginMeta) Get(key string) string {
+	return pm.Fields[normalizeKey(key)]
+}
+
+func (pm *PluginMeta) Set(key, value string) {
+	pm.Fields[normalizeKey(key)] = value
 }
 
 func (meta *PluginMeta) Scan(in io.Reader) error {
@@ -93,42 +74,11 @@ func (meta *PluginMeta) Scan(in io.Reader) error {
 	return nil
 }
 
-func (pm *PluginMeta) ParseMetaLine(line string) error {
-	match := plugin_name_re.FindStringSubmatch(line)
+func (pm *PluginMeta) ParseMetaLine(line string) bool {
+	match := meta_re.FindStringSubmatch(line)
 	if match != nil {
-		pm.Name = strings.TrimRight(match[1], " \t")
-		return nil
+		pm.Set(match[1], match[2])
 	}
 
-	match = version_re.FindStringSubmatch(line)
-	if match != nil {
-		pm.Version = strings.TrimRight(match[1], " \t")
-		return nil
-	}
-
-	match = plugin_uri_re.FindStringSubmatch(line)
-	if match != nil {
-		pm.URI = strings.TrimRight(match[1], " \t")
-		return nil
-	}
-
-	match = description_re.FindStringSubmatch(line)
-	if match != nil {
-		pm.Description = strings.TrimRight(match[1], " \t")
-		return nil
-	}
-
-	match = author_re.FindStringSubmatch(line)
-	if match != nil {
-		pm.Author = strings.TrimRight(match[1], " \t")
-		return nil
-	}
-
-	match = author_uri_re.FindStringSubmatch(line)
-	if match != nil {
-		pm.AuthorURI = strings.TrimRight(match[1], " \t")
-		return nil
-	}
-
-	return fmt.Errorf("unknown meta field: %s", line)
+	return match != nil
 }

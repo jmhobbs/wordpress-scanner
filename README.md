@@ -1,12 +1,6 @@
-# Ideas
+This is an experimental server which downloads plugins from WordPress.org on demand, and hashes their contents.
 
-  * https://github.com/d4l3k/messagediff - Diff the output of client/server
-  * Optionally use protobufs
-  * Make sure gzip is on
-  * HTTP/2?
-  * TLS & Auth
-  * Use a tree structure (radix tree?) and binary encoding for xfer
-  * Hash at the directory level (sorted filenames + hashes)
+The idea is that a client could check the hashes against their existing files to quickly check if the plugin has been hacked or otherwise corrupted.
 
 # Endpoints
 
@@ -27,3 +21,14 @@ I wrote a custom binary encoding of the Scan struct for storage and wire xfer.  
 You don't gain much after gzip, but it's still interesting, and decoding should be faster than JSON.
 
 If we move to a prefix tree, I think we could easily go even smaller.
+
+# Ideas
+
+  * https://github.com/d4l3k/messagediff - Diff the output of client/server
+  * Optionally use protobufs
+  * Make sure gzip is on
+  * HTTP/2?
+  * TLS & Auth
+  * Use a tree structure (radix tree?) and binary encoding for xfer
+  * Hash at the directory level (sorted filenames + hashes)
+

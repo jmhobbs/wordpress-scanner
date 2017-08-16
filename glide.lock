@@ -1,27 +1,10 @@
-hash: 246c8b9dbc2857c98e91032bbaea3ba9dd560c6272b89ffb776122561631e433
-updated: 2017-06-28T23:49:55.311578738-05:00
+hash: 38903c68fe5f44e617661e7dd5c48d875996e08a89908621ce87391f2a3451c9
+updated: 2017-08-15T22:11:47.581673912-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
-- name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: bcd8bc72b08df0f70df986b97f95590779502d31
-- name: github.com/inconshreveable/log15
-  version: b105bd37f74e5d9dc7b6ad7806715c7a2b83fd3f
-- name: github.com/mattn/go-colorable
-  version: 941b50ebc6efddf4c41c8e4537a5f68a4e686b24
-- name: github.com/mattn/go-isatty
-  version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
 - name: github.com/spaolacci/murmur3
   version: 0d12bf811670bf6a1a63828dfbd003eded177fce
-- name: golang.org/x/sys
-  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
-  subpackages:
-  - unix
-- name: gopkg.in/inconshreveable/log15.v2
-  version: b105bd37f74e5d9dc7b6ad7806715c7a2b83fd3f
-  subpackages:
-  - stack
-  - term
 testImports: []

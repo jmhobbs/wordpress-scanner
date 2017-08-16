@@ -5,12 +5,6 @@ import (
 	"testing"
 )
 
-func must(t *testing.T, err error) {
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestParsingMetaLinesMatcher(t *testing.T) {
 	src := []string{
 		// Best case

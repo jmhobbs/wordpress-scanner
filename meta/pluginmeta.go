@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+// Holds meta values extracted from WordPress plugin PHP
+// source files.
 type PluginMeta struct {
 	Fields map[string]string
 }
@@ -42,14 +44,18 @@ func normalizeKey(key string) string {
 	return strings.Title(strings.ToLower(key))
 }
 
+// Get a meta field value.
 func (pm *PluginMeta) Get(key string) string {
 	return pm.Fields[normalizeKey(key)]
 }
 
+// Set a meta field value.
 func (pm *PluginMeta) Set(key, value string) {
 	pm.Fields[normalizeKey(key)] = value
 }
 
+// Scan a PHP source file for comment blocks and extract the meta
+// fields, if found.
 func (meta *PluginMeta) Scan(in io.Reader) error {
 	open := false
 

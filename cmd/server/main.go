@@ -15,6 +15,16 @@ import (
 	"github.com/jmhobbs/wordpress-scanner/shared"
 )
 
+type Version struct {
+	Version string `json:"version"`
+	Files   []shared.File `json:"files"`
+}
+
+type VersionList struct {
+	Plugin string `json:"plugin"`
+	Versions []Version `json:"versions"`
+}
+
 var db *bolt.DB
 
 func main() {
@@ -28,6 +38,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/plugin/{plugin}/{version}", GetPlugin).Methods("GET")
+	r.HandleFunc("/plugin/{plugin}", ListPluginVersions).Methods("GET")
 	http.Handle("/", r)
 
 	http.ListenAndServe("127.0.0.1:9090", r)
@@ -87,6 +98,42 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 	})
 
 	w.Write(s)
+}
+
+func ListPluginVersions(w http.ResponseWriter, req *http.Request) {
+	plugin      := mux.Vars(req)["plugin"]
+	versionList := VersionList{Plugin: plugin, Versions: make([]Version, 0)}
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(plugin))
+
+		if b == nil {
+			return nil
+		}
+
+		b.ForEach(func(version, s []byte) error {
+			var scan shared.Scan
+			err := json.Unmarshal(s, &scan)
+
+			if err != nil {
+				log.Printf("error: %s", err)
+				return nil
+			}
+
+			versionList.Versions = append(versionList.Versions, Version{Version: string(version), Files: scan.Files})
+
+			return nil
+		})
+
+		return nil
+	})
+
+	output, err := json.Marshal(versionList)
+	if err != nil {
+		panic(err)
+	}
+
+	w.Write(output)
 }
 
 func scanPlugin(plugin, version string) (*shared.Scan, error) {

@@ -35,15 +35,17 @@ func main() {
 
 func GetPlugin(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
+	plugin := vars["plugin"]
+	version := vars["version"]
 	found := false
 
 	db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(vars["plugin"]))
+		b := tx.Bucket([]byte(plugin))
 		if b == nil {
 			return nil
 		}
 
-		s := b.Get([]byte(vars["version"]))
+		s := b.Get([]byte(version))
 		if s == nil {
 			return nil
 		}
@@ -58,7 +60,7 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	scan, err := scanPlugin(vars["plugin"], vars["version"])
+	scan, err := scanPlugin(plugin, version)
 	if err != nil {
 		panic(err)
 	}
@@ -70,13 +72,13 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 	}
 
 	db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte(vars["plugin"]))
+		b, err := tx.CreateBucketIfNotExists([]byte(plugin))
 		if err != nil {
 			log.Printf("Failed to create bucket: %s\n", err)
 			return err
 		}
 
-		err = b.Put([]byte(vars["version"]), s)
+		err = b.Put([]byte(version), s)
 		if err != nil {
 			log.Printf("Failed to write scan: %s\n", err)
 		}

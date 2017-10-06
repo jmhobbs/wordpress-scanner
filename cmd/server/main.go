@@ -62,6 +62,7 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 		}
 
 		found = true
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(s)
 
 		return nil
@@ -97,6 +98,7 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(s)
 }
 
@@ -133,6 +135,7 @@ func ListPluginVersions(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(output)
 }
 

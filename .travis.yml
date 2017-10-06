@@ -1,0 +1,18 @@
+language: go
+
+# safelist
+branches:
+  only:
+  - master
+  - travis
+
+before_install:
+  - go get github.com/onsi/ginkgo/ginkgo
+  - go get github.com/modocache/gover
+
+script:
+  - ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2
+
+after_success:
+  - gover . coverage.txt
+  - bash <(curl -s https://codecov.io/bash)

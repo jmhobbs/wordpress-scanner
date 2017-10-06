@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jmhobbs/wordpress-scanner.svg?branch=master)](https://travis-ci.org/jmhobbs/wordpress-scanner) [![codecov](https://codecov.io/gh/jmhobbs/wordpress-scanner/branch/master/graph/badge.svg)](https://codecov.io/gh/jmhobbs/wordpress-scanner)
+
 This is an experimental server which downloads plugins from WordPress.org on demand, and hashes their contents.
 
 The idea is that a client could check the hashes against their existing files to quickly check if the plugin has been hacked or otherwise corrupted.

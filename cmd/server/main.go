@@ -49,57 +49,15 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	plugin := vars["plugin"]
 	version := vars["version"]
-	found := false
 
-	db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(plugin))
-		if b == nil {
-			return nil
-		}
-
-		s := b.Get([]byte(version))
-		if s == nil {
-			return nil
-		}
-
-		found = true
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(s)
-
-		return nil
-	})
-
-	if found {
-		return
-	}
-
-	scan, err := scanPlugin(plugin, version)
-	if err != nil {
-		panic(err)
-	}
-
-	//json.NewEncoder(w).Encode(scan)
-	s, err := json.Marshal(scan)
-	if err != nil {
-		panic(err)
-	}
-
-	db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte(plugin))
-		if err != nil {
-			log.Printf("Failed to create bucket: %s\n", err)
-			return err
-		}
-
-		err = b.Put([]byte(version), s)
-		if err != nil {
-			log.Printf("Failed to write scan: %s\n", err)
-		}
-
-		return nil
-	})
+	s, err := lookupOrScanPlugin(plugin, version)
 
 	w.Header().Set("Content-Type", "application/json")
+
+	if err != nil {
+		panic(err)
+	}
+
 	w.Write(s)
 }
 
@@ -238,4 +196,57 @@ func downloadPluginFile(name, version string) (*os.File, int64, error) {
 	}
 
 	return tmpfile, written, nil
+}
+
+func lookupOrScanPlugin(plugin string, version string) ([]byte, error) {
+	var s []byte
+	found := false
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(plugin))
+		if b == nil {
+			return nil
+		}
+
+		s = b.Get([]byte(version))
+		if s == nil {
+			return nil
+		}
+
+		found = true
+
+		return nil
+	})
+
+	if found {
+		return s, nil
+	}
+
+	scan, err := scanPlugin(plugin, version)
+	if err != nil {
+		panic(err)
+	}
+
+	s, err = json.Marshal(scan)
+	if err != nil {
+		panic(err)
+	}
+
+	db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte(plugin))
+		if err != nil {
+			log.Printf("Failed to create bucket: %s\n", err)
+			return err
+		}
+
+		err = b.Put([]byte(version), s)
+		if err != nil {
+			log.Printf("Failed to write scan: %s\n", err)
+		}
+
+		return nil
+	})
+
+	log.Println("Returning from the bottom")
+	return s, nil
 }

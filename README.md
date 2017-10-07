@@ -8,7 +8,7 @@ The idea is that a client could check the hashes against their existing files to
 
   * `GET /plugin/{name}/{version}` - Get hashes for a plugin from wordpress.org
   * `POST /plugin/{name}/{version}/diff` - Compare a client hash against a wordpress.org hash (Not Implemented)
-  * `GET /plugin` - List of plugins we have hashed versions of (Not Implemented)
+  * `GET /plugin` - List of plugins we have hashed versions of
   * `GET /plugin/{name}` - List of versions we have hashed
 
 # Binary Encoding

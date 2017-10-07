@@ -39,6 +39,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/plugin/{plugin}/{version}", GetPlugin).Methods("GET")
 	r.HandleFunc("/plugin/{plugin}", ListPluginVersions).Methods("GET")
+	r.HandleFunc("/plugin", ListPlugins).Methods("GET")
 	http.Handle("/", r)
 
 	http.ListenAndServe("127.0.0.1:9090", r)
@@ -100,6 +101,25 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(s)
+}
+
+func ListPlugins(w http.ResponseWriter, req *http.Request) {
+	plugins := make([]string, 0)
+
+	db.View(func(tx *bolt.Tx) error {
+		return tx.ForEach(func(bucket []byte,_ *bolt.Bucket) error {
+			plugins = append(plugins, string(bucket))
+			return nil
+		})
+	})
+
+	output, err := json.Marshal(plugins)
+	if err != nil {
+		panic(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(output)
 }
 
 func ListPluginVersions(w http.ResponseWriter, req *http.Request) {

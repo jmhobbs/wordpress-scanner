@@ -61,14 +61,7 @@ func DiffPlugin(w http.ResponseWriter, req *http.Request) {
 
 	defer req.Body.Close()
 
-	s, err := lookupOrScanPlugin(plugin, version)
-
-	if err != nil {
-		panic(err)
-	}
-
-	var referenceScan shared.Scan
-	err = json.Unmarshal(s, &referenceScan)
+	referenceScan, err := lookupOrScanPlugin(plugin, version)
 
 	if err != nil {
 		panic(err)
@@ -90,14 +83,19 @@ func GetPlugin(w http.ResponseWriter, req *http.Request) {
 	plugin := vars["plugin"]
 	version := vars["version"]
 
-	s, err := lookupOrScanPlugin(plugin, version)
-
-	w.Header().Set("Content-Type", "application/json")
+	scan, err := lookupOrScanPlugin(plugin, version)
 
 	if err != nil {
 		panic(err)
 	}
 
+	s, err := json.Marshal(scan)
+
+	if err != nil {
+		panic(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(s)
 }
 
@@ -238,7 +236,7 @@ func downloadPluginFile(name, version string) (*os.File, int64, error) {
 	return tmpfile, written, nil
 }
 
-func lookupOrScanPlugin(plugin string, version string) ([]byte, error) {
+func lookupOrScanPlugin(plugin string, version string) (*shared.Scan, error) {
 	var s []byte
 	found := false
 
@@ -259,7 +257,14 @@ func lookupOrScanPlugin(plugin string, version string) ([]byte, error) {
 	})
 
 	if found {
-		return s, nil
+		var scan shared.Scan
+		err := json.Unmarshal(s, &scan)
+
+		if err != nil {
+			panic(err)
+		}
+
+		return &scan, nil
 	}
 
 	scan, err := scanPlugin(plugin, version)
@@ -288,5 +293,5 @@ func lookupOrScanPlugin(plugin string, version string) ([]byte, error) {
 	})
 
 	log.Println("Returning from the bottom")
-	return s, nil
+	return scan, nil
 }

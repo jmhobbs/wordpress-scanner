@@ -37,12 +37,52 @@ func main() {
 	defer db.Close()
 
 	r := mux.NewRouter()
+	r.HandleFunc("/plugin/{plugin}/{version}/diff", DiffPlugin).Methods("POST")
 	r.HandleFunc("/plugin/{plugin}/{version}", GetPlugin).Methods("GET")
 	r.HandleFunc("/plugin/{plugin}", ListPluginVersions).Methods("GET")
 	r.HandleFunc("/plugin", ListPlugins).Methods("GET")
 	http.Handle("/", r)
 
 	http.ListenAndServe("127.0.0.1:9090", r)
+}
+
+func DiffPlugin(w http.ResponseWriter, req *http.Request) {
+	vars    := mux.Vars(req)
+	plugin  := vars["plugin"]
+	version := vars["version"]
+
+	var scan shared.Scan
+	decoder := json.NewDecoder(req.Body)
+	err := decoder.Decode(&scan)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer req.Body.Close()
+
+	s, err := lookupOrScanPlugin(plugin, version)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var referenceScan shared.Scan
+	err = json.Unmarshal(s, &referenceScan)
+
+	if err != nil {
+		panic(err)
+	}
+
+	diff := referenceScan.Diff(&scan)
+	d, err := json.Marshal(diff)
+
+	if err != nil {
+		panic(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(d)
 }
 
 func GetPlugin(w http.ResponseWriter, req *http.Request) {

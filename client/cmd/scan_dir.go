@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -60,21 +59,7 @@ func scanFile(scan *shared.Scan) filepath.WalkFunc {
 			return nil
 		}
 
-		if strings.HasSuffix(path, ".php") {
-			f, err := os.Open(path)
-			if err != nil {
-				scan.AddErrored(path, err)
-				return nil
-			}
-
-			hash, err := shared.GetHash(f)
-			if err != nil {
-				scan.AddErrored(path, err)
-				return nil
-			}
-
-			scan.AddHashed(path, hash)
-		}
+		scan.Scan(path)
 
 		return nil
 	}

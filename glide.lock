@@ -1,10 +1,22 @@
-hash: 38903c68fe5f44e617661e7dd5c48d875996e08a89908621ce87391f2a3451c9
-updated: 2017-08-15T22:11:47.581673912-05:00
+hash: a70cc19ee0c6ec5b6b3fd3287c453fab7c81b7f4bfd9cf46fd10ac971af4e728
+updated: 2017-10-08T09:08:56.68180299-05:00
 imports:
 - name: github.com/boltdb/bolt
-  version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
+  version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: bcd8bc72b08df0f70df986b97f95590779502d31
+  version: 24fca303ac6da784b9e8269f724ddeb0b2eea5e7
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/spaolacci/murmur3
   version: 0d12bf811670bf6a1a63828dfbd003eded177fce
+- name: github.com/spf13/cobra
+  version: 83b1f039622680cde7a373eb1f85e10db8506673
+- name: github.com/spf13/pflag
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- name: golang.org/x/sys
+  version: ebfc5b4631820b793c9010c87fd8fef0f39eb082
+  subpackages:
+  - unix
 testImports: []

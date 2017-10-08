@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"archive/zip"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -29,7 +28,15 @@ var scanArchiveCmd = &cobra.Command{
 		version := args[1]
 		archive := args[2]
 
-		scan, err := scanPlugin(plugin, version, archive)
+		file, err := os.Open(archive)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			file.Close()
+		}()
+
+		scan, err := shared.NewScanFromFile(plugin, version, file)
 
 		if err != nil {
 			log.Fatal(err)
@@ -37,50 +44,4 @@ var scanArchiveCmd = &cobra.Command{
 
 		json.NewEncoder(os.Stdout).Encode(scan)
 	},
-}
-
-func scanPlugin(plugin, version string, archive string) (*shared.Scan, error) {
-	scan := shared.NewScan(plugin, version)
-
-	file, err := os.Open(archive)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		file.Close()
-	}()
-
-	stat, err := file.Stat()
-
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := zip.NewReader(file, stat.Size())
-	if err != nil {
-		return nil, err
-	}
-
-	for _, f := range r.File {
-		if f.Name[len(f.Name)-1] == '/' && f.UncompressedSize64 == 0 {
-			continue
-		}
-
-		r, err := f.Open()
-		if err != nil {
-			scan.AddErrored(f.Name, err)
-			continue
-		}
-
-		hash, err := shared.GetHash(r)
-		if err != nil {
-			scan.AddErrored(f.Name, err)
-			continue
-		}
-		r.Close()
-
-		scan.AddHashed(f.Name, hash)
-	}
-
-	return scan, nil
 }

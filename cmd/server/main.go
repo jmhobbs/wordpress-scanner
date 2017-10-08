@@ -1,7 +1,6 @@
 package main
 
 import (
-	"archive/zip"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -156,10 +155,8 @@ func ListPluginVersions(w http.ResponseWriter, req *http.Request) {
 }
 
 func scanPlugin(plugin, version string) (*shared.Scan, error) {
-	scan := shared.NewScan(plugin, version)
-
 	log.Println("Downloading Plugin Zip to TempFile")
-	tmp, b, err := downloadPluginFile(plugin, version)
+	tmp, err := downloadPluginFile(plugin, version)
 	if err != nil {
 		return nil, err
 	}
@@ -169,71 +166,45 @@ func scanPlugin(plugin, version string) (*shared.Scan, error) {
 	}()
 	log.Printf("Downloaded to %s\n", tmp.Name())
 
-	log.Println("Opening zip file")
-	r, err := zip.NewReader(tmp, b)
-	if err != nil {
-		return nil, err
-	}
+	scan, err := shared.NewScanFromFile(plugin, version, tmp)
 
-	log.Println("Hashing files")
-	for _, f := range r.File {
-		if f.Name[len(f.Name)-1] == '/' && f.UncompressedSize64 == 0 {
-			continue
-		}
-
-		r, err := f.Open()
-		if err != nil {
-			scan.AddErrored(f.Name, err)
-			continue
-		}
-
-		hash, err := shared.GetHash(r)
-		if err != nil {
-			scan.AddErrored(f.Name, err)
-			continue
-		}
-		r.Close()
-
-		scan.AddHashed(f.Name, hash)
-	}
-
-	return scan, nil
+	return scan, err
 }
 
 // Returns a zip file in a temporary location.
 // Caller is responsible for closing and removing.
 // i.e. os.Remove(tmpfile.Name())
-func downloadPluginFile(name, version string) (*os.File, int64, error) {
+func downloadPluginFile(name, version string) (*os.File, error) {
 	filename := strings.Join([]string{name, version, "zip"}, ".")
 
 	tmpfile, err := ioutil.TempFile("", filename)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	resp, err := http.Get("https://downloads.wordpress.org/plugin/" + filename)
 	if err != nil {
 		tmpfile.Close()
 		os.Remove(tmpfile.Name())
-		return nil, 0, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	written, err := io.Copy(tmpfile, resp.Body)
+	_, err = io.Copy(tmpfile, resp.Body)
 	if err != nil {
 		tmpfile.Close()
 		os.Remove(tmpfile.Name())
-		return nil, 0, err
+		return nil, err
 	}
 
 	_, err = tmpfile.Seek(0, 0)
 	if err != nil {
 		tmpfile.Close()
 		os.Remove(tmpfile.Name())
-		return nil, 0, err
+		return nil, err
 	}
 
-	return tmpfile, written, nil
+	return tmpfile, nil
 }
 
 func lookupOrScanPlugin(plugin string, version string) (*shared.Scan, error) {

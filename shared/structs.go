@@ -1,5 +1,10 @@
 package shared
 
+import (
+	"archive/zip"
+	"os"
+)
+
 type Diff struct {
 	Plugin  *DiffName  `json:"plugin,omitempty"`
 	Version *DiffName  `json:"version,omitempty"`
@@ -13,7 +18,7 @@ type DiffFile struct {
 }
 
 type DiffName struct {
-	ReferenceName *string  `json:"reference"`
+	ReferenceName *string `json:"reference"`
 	GivenName     *string `json:"given"`
 }
 
@@ -31,6 +36,43 @@ type Scan struct {
 
 func NewScan(plugin, version string) *Scan {
 	return &Scan{plugin, version, []File{}}
+}
+
+func NewScanFromFile(plugin, version string, file *os.File) (*Scan, error) {
+	scan := NewScan(plugin, version)
+
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := zip.NewReader(file, stat.Size())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, f := range r.File {
+		if f.Name[len(f.Name)-1] == '/' && f.UncompressedSize64 == 0 {
+			continue
+		}
+
+		r, err := f.Open()
+		if err != nil {
+			scan.AddErrored(f.Name, err)
+			continue
+		}
+
+		hash, err := GetHash(r)
+		if err != nil {
+			scan.AddErrored(f.Name, err)
+			continue
+		}
+		r.Close()
+
+		scan.AddHashed(f.Name, hash)
+	}
+
+	return scan, nil
 }
 
 func (s *Scan) AddHashed(path string, hash uint32) {

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -17,11 +16,9 @@ var scanArchiveCmd = &cobra.Command{
 	Long:  "",
 	Run: func (cmd *cobra.Command, args []string) {
 		if len(args) < 3 {
-			fmt.Println("You must provide the plugin name, the plugin version, and the archive to scan")
-			os.Exit(1)
+			errorAndExit("You must provide the plugin name, the plugin version, and the archive to scan")
 		} else if len(args) > 3 {
-			fmt.Println("You gave too many arguments")
-			os.Exit(1)
+			errorAndExit("You gave too many arguments")
 		}
 
 		plugin := args[0]

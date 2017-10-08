@@ -21,5 +21,6 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.AddCommand(scanArchiveCmd)
 	rootCmd.AddCommand(scanDirCmd)
 }

@@ -9,7 +9,7 @@ client: FORCE
 	$(BUILD_ENV_FLAGS) go build -o bin/client ./client/*.go
 
 server: FORCE
-	$(BUILD_ENV_FLAGS) go build -o bin/server ./cmd/server/*.go
+	$(BUILD_ENV_FLAGS) go build -o bin/server ./server/*.go
 
 help:
 	@echo "Influential make variables"
